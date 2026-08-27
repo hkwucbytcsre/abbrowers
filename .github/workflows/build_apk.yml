@@ -65,7 +65,7 @@ jobs:
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0001-mv2-reenable.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0002-browseraction-schema-desktop-android.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0003-extensions-menu-null-coordinator-fallback.patch || exit 1
-            wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0004-allow-unpacked-without-devmode.patch || exit 1
+            #wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0004-allow-unpacked-without-devmode.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0005-webstore-desktop-user-agent.patch || exit 1
           fi
           # 应用所有 .patch 文件
