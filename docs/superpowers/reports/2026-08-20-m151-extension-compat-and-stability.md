@@ -54,9 +54,9 @@ uBO Lite with its 5414-rule main ruleset.
 So any DNR extension must be loaded from a path the browser can write to:
 
 ```
-adb shell "run-as com.danosito.afterbird cp -r /data/local/tmp/ext/ubolite \
-  /data/data/com.danosito.afterbird/ubolite"
-# then --load-extension=/data/data/com.danosito.afterbird/ubolite
+adb shell "run-as com.alice.kiwi cp -r /data/local/tmp/ext/ubolite \
+  /data/data/com.alice.kiwi/ubolite"
+# then --load-extension=/data/data/com.alice.kiwi/ubolite
 ```
 
 This affects sideloading only — store-installed extensions live under the
@@ -141,7 +141,7 @@ the emulator; the runner then skips installation on a checksum match.
 
 ## Monkey stress
 
-`adb shell monkey -p com.danosito.afterbird --throttle 120 -v 3000` with uBO
+`adb shell monkey -p com.alice.kiwi --throttle 120 -v 3000` with uBO
 loaded: 3000 events injected, same PID afterwards, zero crashes and zero ANRs in
 the package-scoped logcat.
 

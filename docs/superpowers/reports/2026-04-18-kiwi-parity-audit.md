@@ -5,7 +5,7 @@ Device: `emulator-5554` (Android 15 emulator, API 35, arm64, 320x640)
 Builds compared:
 
 - **Kiwi Browser** `com.kiwibrowser.browser` versionName=`132.0.6961.0` (versionCode 696100004)
-- **Afterbird** `com.danosito.afterbird` versionName=`132.0.6834.83` (build tag v1.5.0, APK `/tmp/afterbird-v1.5rc3.apk`)
+- **Afterbird** `com.alice.kiwi` versionName=`132.0.6834.83` (build tag v1.5.0, APK `/tmp/afterbird-v1.5rc3.apk`)
 
 Both browsers coexist on the device, share the same
 `/data/local/tmp/chrome-command-line` (`--load-extension=/data/local/tmp/ublock,

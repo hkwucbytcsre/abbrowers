@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 APK_PATH=""
-APP_PACKAGE="${AFTERBIRD_APP_PACKAGE:-com.danosito.afterbird}"
+APP_PACKAGE="${AFTERBIRD_APP_PACKAGE:-com.alice.kiwi}"
 LAUNCH_ACTIVITY="${AFTERBIRD_LAUNCH_ACTIVITY:-}"
 MODERN_SITES_FILE="${REPO_ROOT}/tests/emulator/modern_sites.txt"
 INTERNAL_PAGES_FILE="${REPO_ROOT}/tests/emulator/internal_pages_smoke.txt"
@@ -39,7 +39,7 @@ Required:
   --apk <path>                     APK path to install on a running emulator/device.
 
 Options:
-  --package <name>                 Android package name (default: com.danosito.afterbird).
+  --package <name>                 Android package name (default: com.alice.kiwi).
   --activity <activity>            Launch activity class (for example org.chromium...ChromeTabbedActivity).
   --serial <serial>                adb serial (if multiple devices are connected).
   --site-list <path>               URL list for modern-site flow (default: tests/emulator/modern_sites.txt).

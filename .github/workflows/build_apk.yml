@@ -1,0 +1,98 @@
+name: 'Build Kiwi Reborn APK'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          df -h
+
+      # 将代码检出到当前目录（根目录），以便直接访问 patches/ 和 .build/
+      - name: Checkout your patches
+        uses: actions/checkout@v4
+        with:
+          ref: kiwi
+          path: .          # 检出到当前目录（即工作区根目录）
+
+      - name: Install depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $HOME/depot_tools
+          echo "$HOME/depot_tools" >> $GITHUB_PATH
+
+      - name: Read Chromium version
+        id: ver
+        run: |
+          source CHROMIUM_VERSION
+          echo "version=${CHROMIUM_MAJOR}.${CHROMIUM_MINOR}.${CHROMIUM_BUILD}.${CHROMIUM_PATCH}" >> $GITHUB_OUTPUT
+          echo "major=$CHROMIUM_MAJOR" >> $GITHUB_OUTPUT
+
+      - name: Configure gclient for Android
+        run: |
+          mkdir chromium && cd chromium
+          gclient config --name=src \
+            https://chromium.googlesource.com/chromium/src.git \
+            --unmanaged
+          echo "target_os = ['android']" >> .gclient
+
+      - name: Fetch Chromium at pinned version
+        run: |
+          cd chromium
+          gclient sync \
+            --no-history \
+            --nohooks \
+            --revision=src@${{ steps.ver.outputs.version }} \
+            -D
+
+      # 应用 patches/m151/ 下的所有 .patch 文件（按顺序）
+      - name: Apply Kiwi patches
+        run: |
+          cd chromium/src
+          MAJOR=${{ steps.ver.outputs.major }}
+          PATCH_DIR="../../../patches/m${MAJOR}"
+          # 若对应版本的目录不存在，回退到 m151（当前只有 m151）
+          if [ ! -d "$PATCH_DIR" ]; then
+            PATCH_DIR="../../../patches/m151"
+          fi
+          for patch in "$PATCH_DIR"/*.patch; do
+            echo "Applying $patch"
+            patch -p1 < "$patch" || exit 1
+          done
+
+      - name: Run gclient hooks
+        run: |
+          cd chromium
+          gclient runhooks
+
+      - name: Install Android build dependencies
+        run: |
+          cd chromium/src
+          sudo ./build/install-build-deps.sh --android --no-prompt
+
+      # 使用仓库中 .build/args/release.gn 的参数，并追加必要的基础配置
+      - name: Generate build files (arm64)
+        run: |
+          cd chromium/src
+          # 读取 release.gn，并追加必须的基础参数（若 release.gn 中已有，则后出现的会覆盖，但基础参数放前面更安全）
+          ARGS="target_os=\"android\" target_cpu=\"arm64\" is_debug=false is_component_build=false $(cat ../../../.build/args/release.gn)"
+          gn gen out/arm64 --args="$ARGS"
+
+      - name: Compile APK
+        run: |
+          cd chromium/src
+          autoninja -C out/arm64 chrome_public_apk
+
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiwi-reborn-arm64
+          path: chromium/src/out/arm64/apks/ChromePublic.apk
+          retention-days: 7

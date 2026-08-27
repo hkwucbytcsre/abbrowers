@@ -87,7 +87,7 @@ Two device-only obstacles had to be cleared first:
    (debuggable APK), and the device must be told which app to debug:
 
    ```
-   adb shell am set-debug-app --persistent com.danosito.afterbird
+   adb shell am set-debug-app --persistent com.alice.kiwi
    ```
 
 2. **Another Chromium browser owned the CDP socket.** A stock Kiwi

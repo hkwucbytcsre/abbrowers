@@ -5,7 +5,7 @@ built on Chromium 151 (desktop-android extension stack) and inspired by
 [Kiwi Browser](https://github.com/kiwibrowser/src.next) by
 [Arnaud Granal](https://github.com/arnaudgranal).
 
-**Package:** `com.danosito.afterbird`
+**Package:** `com.alice.kiwi`
 **Maintainer:** danosito ·
 [GitHub](https://github.com/danosito) ·
 [Telegram](https://t.me/danosito)

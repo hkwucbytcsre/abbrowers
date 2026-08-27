@@ -3,7 +3,7 @@
 Date: 2026-04-18
 Branch: `feature/stability-profiler`
 Device: `emulator-5554` (Android 15 emulator, API 35, arm64, 320x640 display)
-Package: `com.danosito.afterbird` (versionName=132.0.6834.83, build tag v1.5.0)
+Package: `com.alice.kiwi` (versionName=132.0.6834.83, build tag v1.5.0)
 
 ## TL;DR (actual findings)
 
@@ -31,7 +31,7 @@ emulator-5554 device    (this run)
 emulator-5556 device    (DO NOT TOUCH — reserved)
 ```
 
-`adb -s emulator-5554 shell dumpsys package com.danosito.afterbird`:
+`adb -s emulator-5554 shell dumpsys package com.alice.kiwi`:
 - versionName=132.0.6834.83
 - firstInstallTime=2026-04-16 17:38:08
 - lastUpdateTime=2026-04-17 08:54:17
@@ -50,7 +50,7 @@ I captured three process states. "0 ext" = command-line without `--load-extensio
 
 | Role (inferred)        | cmdline label                          | 0 ext | 3 ext | 6 ext |
 |------------------------|----------------------------------------|------:|------:|------:|
-| Browser (Java + native)| `com.danosito.afterbird`               | 170904| 168326| 170506|
+| Browser (Java + native)| `com.alice.kiwi`               | 170904| 168326| 170506|
 | App zygote             | `..._zygote`                           | 5465  | 5465  | 5193  |
 | GPU                    | `sandboxed_process0:…:0`               | 24458 | 24564 | 22457 |
 | Network service        | `:privileged_process0`                 | 43110 | 42941 | 43211 |
@@ -287,7 +287,7 @@ opnbnelkeapdlpnhblhidkbaojfgccjb  mv3-probe      state=1  /data/local/tmp/mv3-pr
               &acceptformat=crx2,crx3&x=id%3Dnngceckbapebfimnlniiiahkandclblb%26installsource%3Dondemand%26uc
 ... (user taps Install on the native dialog) ...
 09:08:21.538 I/chromium [Afterbird] Installed extension from
-              /data/user/0/com.danosito.afterbird/app_chrome/Default/Extensions/afterbird_install_QY8G0Z
+              /data/user/0/com.alice.kiwi/app_chrome/Default/Extensions/afterbird_install_QY8G0Z
 09:08:21.538 I/chromium [Afterbird] crx install succeeded: fciinoccdmhaldfhgabcoaemoehngcnh Bitwarden Password Manager
 09:08:21.538 I/chromium [Afterbird] install toast: Extension installed
 09:08:21.989 E/chromium Unknown Extension API - tabs.query

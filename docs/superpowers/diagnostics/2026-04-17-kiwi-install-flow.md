@@ -3,7 +3,7 @@
 **Date**: 2026-04-17
 **Device**: `R5CTA2MHJFA` (physical, Android 15)
 **Kiwi build**: `com.kiwibrowser.browser` versionName=137.0.7337.0, versionCode=733700004
-**Afterbird on same device**: `com.danosito.afterbird` versionName=132.0.6834.83
+**Afterbird on same device**: `com.alice.kiwi` versionName=132.0.6834.83
 
 ## Goal
 

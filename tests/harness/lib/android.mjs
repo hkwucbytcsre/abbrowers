@@ -23,7 +23,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 const pexec = promisify(execFile);
 
-const PKG = process.env.AB_PKG || 'com.danosito.afterbird';
+const PKG = process.env.AB_PKG || 'com.alice.kiwi';
 const CMDLINE = '/data/local/tmp/chrome-command-line';
 
 async function adb(args, { timeout = 30000 } = {}) {

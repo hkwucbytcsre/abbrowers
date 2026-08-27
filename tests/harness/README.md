@@ -49,7 +49,7 @@ Two things differ from the emulator:
    build or when the package is the system's selected debug app. Build with the
    `test` args variant (`is_java_debug = true`) and run once:
 
-       adb shell am set-debug-app --persistent com.danosito.afterbird
+       adb shell am set-debug-app --persistent com.alice.kiwi
 
    Without it the browser starts with none of the harness's flags — no
    `--load-extension`, no `--disable-fre` — and every extension check reports
@@ -90,7 +90,7 @@ extension because it uses an unsupported manifest version`); the
     npm install
     npx playwright install chromium
     node run-parity.mjs desktop            # reference side
-    AB_PKG=com.danosito.afterbird node run-parity.mjs android   # needs CDP-enabled build
+    AB_PKG=com.alice.kiwi node run-parity.mjs android   # needs CDP-enabled build
 
 ## Status (M151 stock overlay + MV2 patch, on swiftshader_indirect)
 

@@ -22,7 +22,7 @@ import { promisify } from 'node:util';
 import { chromium } from 'playwright';
 
 const pexec = promisify(execFile);
-const PKG = process.env.AB_PKG || 'com.danosito.afterbird';
+const PKG = process.env.AB_PKG || 'com.alice.kiwi';
 const PORT = Number(process.env.AB_CDP_PORT || 9222);
 const CMDLINE = '/data/local/tmp/chrome-command-line';
 const SETTLE_MS = Number(process.env.AB_EXT_SETTLE_MS || 35000);

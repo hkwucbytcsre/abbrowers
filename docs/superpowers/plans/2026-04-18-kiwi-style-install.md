@@ -808,7 +808,7 @@ Expected: `Success` line at the bottom of `adb install` output.
 - [ ] **Step 2: Open chrome://extensions and verify the button renders**
 
 ```bash
-adb -s R5CTA2MHJFA shell am start -n com.danosito.afterbird/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "chrome://extensions"
+adb -s R5CTA2MHJFA shell am start -n com.alice.kiwi/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "chrome://extensions"
 sleep 3
 adb -s R5CTA2MHJFA shell screencap -p /sdcard/smoke_ext_page.png
 adb -s R5CTA2MHJFA pull /sdcard/smoke_ext_page.png /tmp/smoke_ext_page.png
@@ -842,7 +842,7 @@ with the store rendering normally.
 - [ ] **Step 4: Navigate to a detail page, verify it renders (no throttle)**
 
 ```bash
-adb -s R5CTA2MHJFA shell am start -n com.danosito.afterbird/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh"
+adb -s R5CTA2MHJFA shell am start -n com.alice.kiwi/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh"
 sleep 6
 adb -s R5CTA2MHJFA shell screencap -p /sdcard/smoke_detail.png
 adb -s R5CTA2MHJFA pull /sdcard/smoke_detail.png /tmp/smoke_detail.png
@@ -889,7 +889,7 @@ screenshot — roughly bottom-right `x=650, y=1900`), then:
 ```bash
 adb -s R5CTA2MHJFA shell input tap 650 1900
 sleep 4
-adb -s R5CTA2MHJFA shell am start -n com.danosito.afterbird/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "chrome://extensions"
+adb -s R5CTA2MHJFA shell am start -n com.alice.kiwi/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "chrome://extensions"
 sleep 3
 adb -s R5CTA2MHJFA shell screencap -p /sdcard/smoke_installed.png
 adb -s R5CTA2MHJFA pull /sdcard/smoke_installed.png /tmp/smoke_installed.png
@@ -905,7 +905,7 @@ One known-stable URL: `https://github.com/NicolasDelsaux/Grasp/releases/download
 .crx URL).
 
 ```bash
-adb -s R5CTA2MHJFA shell am start -n com.danosito.afterbird/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "https://github.com/.../release.crx"
+adb -s R5CTA2MHJFA shell am start -n com.alice.kiwi/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "https://github.com/.../release.crx"
 sleep 8
 adb -s R5CTA2MHJFA shell screencap -p /sdcard/smoke_crx_download.png
 adb -s R5CTA2MHJFA pull /sdcard/smoke_crx_download.png /tmp/smoke_crx_download.png

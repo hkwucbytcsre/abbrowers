@@ -11,7 +11,7 @@ export async function openDesktop({ headless = true } = {}) {
 
 // Requires the target APK to expose the chrome_devtools_remote CDP socket.
 // Release Afterbird builds keep it closed; the test/dev build must enable it.
-export async function openAndroid({ pkg = process.env.AB_PKG || 'com.danosito.afterbird' } = {}) {
+export async function openAndroid({ pkg = process.env.AB_PKG || 'com.alice.kiwi' } = {}) {
   const [device] = await android.devices();
   if (!device) throw new Error('no adb device');
   const context = await device.launchBrowser({ command: pkg });

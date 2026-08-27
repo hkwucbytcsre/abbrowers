@@ -35,7 +35,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // it belongs to that browser, and forwarding to it silently drives the wrong
 // app. Prefer our process's own `chrome_devtools_remote_<pid>` socket.
 async function cdpSocketName({ timeoutMs = 30000 } = {}) {
-  const pkg = process.env.AB_PKG || 'com.danosito.afterbird';
+  const pkg = process.env.AB_PKG || 'com.alice.kiwi';
   const deadline = Date.now() + timeoutMs;
   // The socket is opened from a deferred startup task, so it appears a little
   // after the process does.
@@ -60,7 +60,7 @@ async function forwardCdp() {
       const res = await fetch(`http://localhost:${PORT}/json/version`);
       if (res.ok) {
         const info = await res.json();
-        const pkg = process.env.AB_PKG || 'com.danosito.afterbird';
+        const pkg = process.env.AB_PKG || 'com.alice.kiwi';
         if (info['Android-Package'] && info['Android-Package'] !== pkg) {
           throw new Error(
             `CDP socket ${socket} belongs to ${info['Android-Package']}, not ${pkg} — ` +
