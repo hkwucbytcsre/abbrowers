@@ -57,10 +57,9 @@ jobs:
         run: |
           cd chromium/src
           MAJOR=${{ steps.ver.outputs.major }}
-          PATCH_DIR="../../../patches/m${MAJOR}"
-          # 若对应版本的目录不存在，回退到 m151（当前只有 m151）
+          PATCH_DIR="../../patches/m${MAJOR}"          # 注意是 ../.. 而不是 ../../..
           if [ ! -d "$PATCH_DIR" ]; then
-            PATCH_DIR="../../../patches/m151"
+            PATCH_DIR="../../patches/m151"             # 同样改为 ../..
           fi
           for patch in "$PATCH_DIR"/*.patch; do
             echo "Applying $patch"
