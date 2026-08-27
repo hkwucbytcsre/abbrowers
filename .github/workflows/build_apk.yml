@@ -19,7 +19,7 @@ jobs:
       - name: Checkout your patches
         uses: actions/checkout@v4
         with:
-          ref: kiwi
+          ref: afterbird
           path: .
 
       - name: Install depot_tools
