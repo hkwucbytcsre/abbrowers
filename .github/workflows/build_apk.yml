@@ -16,24 +16,23 @@ jobs:
           sudo rm -rf /opt/ghc
           df -h
 
-      # 将代码检出到当前目录（根目录），以便直接访问 patches/ 和 .build/
       - name: Checkout your patches
         uses: actions/checkout@v4
         with:
           ref: kiwi
-          path: .          # 检出到当前目录（即工作区根目录）
+          path: .
 
       - name: Install depot_tools
         run: |
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $HOME/depot_tools
           echo "$HOME/depot_tools" >> $GITHUB_PATH
 
-      - name: Read Chromium version
+      # ---- 以下两步硬编码版本，不再读取 CHROMIUM_VERSION ----
+      - name: Set Chromium version
         id: ver
         run: |
-          source CHROMIUM_VERSION
-          echo "version=${CHROMIUM_MAJOR}.${CHROMIUM_MINOR}.${CHROMIUM_BUILD}.${CHROMIUM_PATCH}" >> $GITHUB_OUTPUT
-          echo "major=$CHROMIUM_MAJOR" >> $GITHUB_OUTPUT
+          echo "version=151.0.7922.38" >> $GITHUB_OUTPUT
+          echo "major=151" >> $GITHUB_OUTPUT
 
       - name: Configure gclient for Android
         run: |
@@ -52,16 +51,25 @@ jobs:
             --revision=src@${{ steps.ver.outputs.version }} \
             -D
 
-      # 应用 patches/m151/ 下的所有 .patch 文件（按顺序）
       - name: Apply Kiwi patches
         run: |
           cd chromium/src
-          MAJOR=${{ steps.ver.outputs.major }}
-          PATCH_DIR="../../patches/m${MAJOR}"          # 注意是 ../.. 而不是 ../../..
-          if [ ! -d "$PATCH_DIR" ]; then
-            PATCH_DIR="../../patches/m151"             # 同样改为 ../..
+          # 硬编码补丁目录为 m151（因为版本固定为151）
+          LOCAL_PATCH_DIR="$GITHUB_WORKSPACE/patches/m151"
+          if [ -d "$LOCAL_PATCH_DIR" ] && [ -n "$(ls -A "$LOCAL_PATCH_DIR"/*.patch 2>/dev/null)" ]; then
+            echo "Using local patches from $LOCAL_PATCH_DIR"
+            cp "$LOCAL_PATCH_DIR"/*.patch .
+          else
+            echo "Local patches not found, downloading from GitHub via wget..."
+            # 直接下载到当前目录（chromium/src）
+            wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/kiwi/patches/m151/0001-mv2-reenable.patch || exit 1
+            wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/kiwi/patches/m151/0002-browseraction-schema-desktop-android.patch || exit 1
+            wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/kiwi/patches/m151/0003-extensions-menu-null-coordinator-fallback.patch || exit 1
+            wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/kiwi/patches/m151/0004-allow-unpacked-without-devmode.patch || exit 1
+            wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/kiwi/patches/m151/0005-webstore-desktop-user-agent.patch || exit 1
           fi
-          for patch in "$PATCH_DIR"/*.patch; do
+          # 应用所有 .patch 文件
+          for patch in ./*.patch; do
             echo "Applying $patch"
             patch -p1 < "$patch" || exit 1
           done
@@ -76,11 +84,9 @@ jobs:
           cd chromium/src
           sudo ./build/install-build-deps.sh --android --no-prompt
 
-      # 使用仓库中 .build/args/release.gn 的参数，并追加必要的基础配置
       - name: Generate build files (arm64)
         run: |
           cd chromium/src
-          # 读取 release.gn，并追加必须的基础参数（若 release.gn 中已有，则后出现的会覆盖，但基础参数放前面更安全）
           ARGS="target_os=\"android\" target_cpu=\"arm64\" is_debug=false is_component_build=false $(cat ../../../.build/args/release.gn)"
           gn gen out/arm64 --args="$ARGS"
 
