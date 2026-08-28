@@ -54,25 +54,27 @@ jobs:
       - name: Apply Kiwi patches
         run: |
           cd chromium/src
-          echo "=== List all files in chrome/browser/extensions/ ==="
-          ls -la chrome/browser/extensions/ 2>&1 || echo "Directory does not exist"
-          # 硬编码补丁目录为 m151（因为版本固定为151）
           LOCAL_PATCH_DIR="$GITHUB_WORKSPACE/patches/m151"
           if [ -d "$LOCAL_PATCH_DIR" ] && [ -n "$(ls -A "$LOCAL_PATCH_DIR"/*.patch 2>/dev/null)" ]; then
             echo "Using local patches from $LOCAL_PATCH_DIR"
             cp "$LOCAL_PATCH_DIR"/*.patch .
           else
             echo "Local patches not found, downloading from GitHub via wget..."
-            # 直接下载到当前目录（chromium/src）
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0001-mv2-reenable.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0002-browseraction-schema-desktop-android.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0003-extensions-menu-null-coordinator-fallback.patch || exit 1
+            # 补全漏掉的 0004
+            wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0004-allow-unpacked-without-devmode.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0005-webstore-desktop-user-agent.patch || exit 1
           fi
-          # 应用所有 .patch 文件
+          # 应用补丁：0004 用 git apply，其他用 patch -p1
           for patch in ./*.patch; do
             echo "Applying $patch"
-            patch -p1 < "$patch" || exit 1
+            if [[ "$patch" == *"0004-allow-unpacked-without-devmode.patch"* ]]; then
+              git apply --verbose "$patch" || exit 1
+            else
+              patch -p1 < "$patch" || exit 1
+            fi
           done
 
       - name: Run gclient hooks
