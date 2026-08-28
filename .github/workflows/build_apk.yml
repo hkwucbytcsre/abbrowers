@@ -54,6 +54,8 @@ jobs:
       - name: Apply Kiwi patches
         run: |
           cd chromium/src
+          echo "=== List all files in chrome/browser/extensions/ ==="
+          ls -la chrome/browser/extensions/ 2>&1 || echo "Directory does not exist"
           # 硬编码补丁目录为 m151（因为版本固定为151）
           LOCAL_PATCH_DIR="$GITHUB_WORKSPACE/patches/m151"
           if [ -d "$LOCAL_PATCH_DIR" ] && [ -n "$(ls -A "$LOCAL_PATCH_DIR"/*.patch 2>/dev/null)" ]; then
