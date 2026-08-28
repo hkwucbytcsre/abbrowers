@@ -90,7 +90,7 @@ jobs:
       - name: Generate build files (arm64)
         run: |
           cd chromium/src
-          ARGS="target_os=\"android\" target_cpu=\"arm64\" is_debug=false is_component_build=false $(cat ../../../.build/args/release.gn)"
+          ARGS="target_os=\"android\" target_cpu=\"arm64\" is_debug=false is_component_build=false $(cat $GITHUB_WORKSPACE/.build/args/release.gn)"
           gn gen out/arm64 --args="$ARGS"
 
       - name: Compile APK
