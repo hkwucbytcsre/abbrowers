@@ -136,22 +136,26 @@ jobs:
           cd chromium/src
           export PATH="/usr/lib/ccache:$PATH"
 
-          # 获取作业开始时间（Unix 时间戳）
-          JOB_START=$(date -d "${{ github.run_started_at }}" +%s)
-          CURRENT=$(date +%s)
-          ELAPSED=$((CURRENT - JOB_START))
-          # 作业总超时 360 分钟（21600 秒）
-          TOTAL_TIMEOUT=21600
-          # 预留 30 分钟（1800 秒）用于保存产物
-          RESERVE=1800
-          # 计算编译可用的最大时间（剩余时间 - 预留时间）
-          REMAINING=$((TOTAL_TIMEOUT - ELAPSED - RESERVE))
-          if [ $REMAINING -le 0 ]; then
-            echo "Not enough time left to compile and save. Exiting."
-            exit 1
+          # 尝试获取作业开始时间（ISO 8601）
+          RUN_STARTED_AT="${{ github.run_started_at }}"
+          if [ -z "$RUN_STARTED_AT" ]; then
+            echo "Warning: github.run_started_at is empty, using fallback timeout of 300 minutes."
+            # 设置固定超时 300 分钟（18000 秒）
+            REMAINING=18000
+          else
+            JOB_START=$(date -d "$RUN_STARTED_AT" +%s)
+            CURRENT=$(date +%s)
+            ELAPSED=$((CURRENT - JOB_START))
+            TOTAL_TIMEOUT=21600   # 360 分钟
+            RESERVE=1800          # 30 分钟
+            REMAINING=$((TOTAL_TIMEOUT - ELAPSED - RESERVE))
+            if [ $REMAINING -le 0 ]; then
+              echo "Not enough time left, using fallback timeout of 300 minutes."
+              REMAINING=18000
+            fi
           fi
-          echo "Compilation timeout set to ${REMAINING} seconds ($((REMAINING / 60)) minutes)."
 
+          echo "Compilation timeout set to ${REMAINING} seconds ($((REMAINING / 60)) minutes)."
           timeout ${REMAINING}s autoninja -C out/arm64 chrome_public_apk
           code=$?
           if [ $code -eq 124 ]; then
