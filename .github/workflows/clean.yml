@@ -1,0 +1,48 @@
+name: Clear Build Cache and Artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      cache_prefix:
+        description: 'Cache key prefix to delete (e.g., "Linux-build-151")'
+        required: true
+        default: 'Linux-build-151'
+
+jobs:
+  clear-cache:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------- 清除缓存 ----------
+      - name: Clear caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 获取所有匹配前缀的缓存ID
+          cache_ids=$(gh cache list --repo ${{ github.repository }} --key "${{ github.event.inputs.cache_prefix }}" --json id --jq '.[].id')
+          if [ -z "$cache_ids" ]; then
+            echo "No matching caches found."
+          else
+            for id in $cache_ids; do
+              echo "Deleting cache ID: $id"
+              gh cache delete $id --repo ${{ github.repository }}
+            done
+          fi
+
+      # ---------- 删除 Artifact ----------
+      - name: Delete partial-build artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Deleting all artifacts named 'partial-build'..."
+          artifacts=$(gh api repos/${{ github.repository }}/actions/artifacts --jq '.artifacts[] | select(.name=="partial-build") | .id')
+          if [ -z "$artifacts" ]; then
+            echo "No artifacts named 'partial-build' found."
+          else
+            for id in $artifacts; do
+              echo "Deleting artifact ID: $id"
+              gh api -X DELETE repos/${{ github.repository }}/actions/artifacts/$id
+            done
+          fi
