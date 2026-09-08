@@ -102,9 +102,14 @@ jobs:
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0004-allow-unpacked-without-devmode.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0005-webstore-desktop-user-agent.patch || exit 1
           fi
+          # 应用补丁：对 0004 使用 git apply，其余用 patch -p1
           for patch in ./*.patch; do
             echo "Applying $patch"
-            patch -p1 < "$patch" || exit 1
+            if [[ "$patch" == *"0004-allow-unpacked-without-devmode.patch"* ]]; then
+              git apply --verbose "$patch" || exit 1
+            else
+              patch -p1 < "$patch" || exit 1
+            fi
           done
 
       - name: Run gclient hooks
