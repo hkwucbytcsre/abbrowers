@@ -27,12 +27,48 @@ jobs:
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $HOME/depot_tools
           echo "$HOME/depot_tools" >> $GITHUB_PATH
 
-      # ---- 以下两步硬编码版本，不再读取 CHROMIUM_VERSION ----
       - name: Set Chromium version
         id: ver
         run: |
           echo "version=151.0.7922.38" >> $GITHUB_OUTPUT
           echo "major=151" >> $GITHUB_OUTPUT
+
+      # ---------- 缓存 depot_tools 和 ccache ----------
+      - name: Cache depot_tools
+        uses: actions/cache@v3
+        with:
+          path: $HOME/depot_tools
+          key: depot-tools-${{ runner.os }}
+
+      - name: Cache ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-${{ steps.ver.outputs.version }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ steps.ver.outputs.version }}-
+
+      # ---------- 下载之前保存的编译中间产物（Artifact，仅含 gen 和元数据） ----------
+      - name: Download previous partial build (if exists)
+        id: download-artifact
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: partial-build
+          path: chromium/src/out/arm64/
+
+      - name: Extract partial build (if downloaded)
+        if: steps.download-artifact.outcome == 'success'
+        run: |
+          cd chromium/src/out/arm64
+          if [ -f partial_build.tar.gz ]; then
+            gunzip -c partial_build.tar.gz | tar -xf -
+            rm -f partial_build.tar.gz
+            echo "Extraction completed. Contents:"
+            ls -la
+          else
+            echo "No partial build archive found."
+          fi
 
       - name: Configure gclient for Android
         run: |
@@ -63,18 +99,12 @@ jobs:
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0001-mv2-reenable.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0002-browseraction-schema-desktop-android.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0003-extensions-menu-null-coordinator-fallback.patch || exit 1
-            # 补全漏掉的 0004
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0004-allow-unpacked-without-devmode.patch || exit 1
             wget -q https://raw.githubusercontent.com/hkwucbytcsre/abbrowers/refs/heads/afterbird/patches/m151/0005-webstore-desktop-user-agent.patch || exit 1
           fi
-          # 应用补丁：0004 用 git apply，其他用 patch -p1
           for patch in ./*.patch; do
             echo "Applying $patch"
-            if [[ "$patch" == *"0004-allow-unpacked-without-devmode.patch"* ]]; then
-              git apply --verbose "$patch" || exit 1
-            else
-              patch -p1 < "$patch" || exit 1
-            fi
+            patch -p1 < "$patch" || exit 1
           done
 
       - name: Run gclient hooks
@@ -87,18 +117,49 @@ jobs:
           cd chromium/src
           sudo ./build/install-build-deps.sh --android --no-prompt
 
-      - name: Generate build files (arm64)
+      - name: Generate build files (arm64) with ccache
         run: |
           cd chromium/src
-          ARGS="target_os=\"android\" target_cpu=\"arm64\" is_debug=false is_component_build=false $(cat $GITHUB_WORKSPACE/.build/args/release.gn)"
+          export PATH="/usr/lib/ccache:$PATH"
+          ARGS="target_os=\"android\" target_cpu=\"arm64\" is_debug=false is_component_build=false compiler_prefix=\"ccache\" $(cat $GITHUB_WORKSPACE/.build/args/release.gn)"
           gn gen out/arm64 --args="$ARGS"
 
-      - name: Compile APK
+      # ---------- 编译步骤（超时 330 分钟，留 30 分钟打包上传） ----------
+      - name: Compile APK (with timeout)
+        id: compile
         run: |
           cd chromium/src
-          autoninja -C out/arm64 chrome_public_apk
+          export PATH="/usr/lib/ccache:$PATH"
+          timeout 330m autoninja -C out/arm64 chrome_public_apk || code=$?
+          if [ $code -eq 124 ]; then
+            echo "TIMEOUT=true" >> $GITHUB_ENV
+          elif [ $code -eq 0 ]; then
+            echo "TIMEOUT=false" >> $GITHUB_ENV
+          else
+            exit $code
+          fi
 
+      # ---------- 若超时，保存部分编译产物（仅 gen 和 Ninja 元数据） ----------
+      - name: Save partial build (if timeout)
+        if: env.TIMEOUT == 'true'
+        run: |
+          cd chromium/src/out/arm64
+          # 只保存 gen 目录和 .ninja_* 文件（这些是增量编译的关键，且体积小）
+          tar -czf partial_build.tar.gz gen .ninja_log .ninja_deps build.ninja
+          echo "Partial build archive created:"
+          ls -lh partial_build.tar.gz
+
+      - name: Upload partial build (if timeout)
+        if: env.TIMEOUT == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: partial-build
+          path: chromium/src/out/arm64/partial_build.tar.gz
+          retention-days: 7
+
+      # ---------- 若编译完成则上传 APK ----------
       - name: Upload APK as artifact
+        if: env.TIMEOUT == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: kiwi-reborn-arm64
