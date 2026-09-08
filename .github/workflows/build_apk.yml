@@ -129,18 +129,37 @@ jobs:
           ARGS="target_os=\"android\" target_cpu=\"arm64\" is_debug=false is_component_build=false compiler_prefix=\"ccache\" $(cat $GITHUB_WORKSPACE/.build/args/release.gn)"
           gn gen out/arm64 --args="$ARGS"
 
-      # ---------- 编译步骤（超时 330 分钟，留 30 分钟打包上传） ----------
-      - name: Compile APK (with timeout)
+      # ---------- 编译步骤（动态超时，确保预留保存时间） ----------
+      - name: Compile APK (with dynamic timeout)
         id: compile
         run: |
           cd chromium/src
           export PATH="/usr/lib/ccache:$PATH"
-          timeout 330m autoninja -C out/arm64 chrome_public_apk || code=$?
+
+          # 获取作业开始时间（Unix 时间戳）
+          JOB_START=$(date -d "${{ github.run_started_at }}" +%s)
+          CURRENT=$(date +%s)
+          ELAPSED=$((CURRENT - JOB_START))
+          # 作业总超时 360 分钟（21600 秒）
+          TOTAL_TIMEOUT=21600
+          # 预留 30 分钟（1800 秒）用于保存产物
+          RESERVE=1800
+          # 计算编译可用的最大时间（剩余时间 - 预留时间）
+          REMAINING=$((TOTAL_TIMEOUT - ELAPSED - RESERVE))
+          if [ $REMAINING -le 0 ]; then
+            echo "Not enough time left to compile and save. Exiting."
+            exit 1
+          fi
+          echo "Compilation timeout set to ${REMAINING} seconds ($((REMAINING / 60)) minutes)."
+
+          timeout ${REMAINING}s autoninja -C out/arm64 chrome_public_apk
+          code=$?
           if [ $code -eq 124 ]; then
             echo "TIMEOUT=true" >> $GITHUB_ENV
           elif [ $code -eq 0 ]; then
             echo "TIMEOUT=false" >> $GITHUB_ENV
           else
+            echo "Build failed with code $code, not timeout."
             exit $code
           fi
 
